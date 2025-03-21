@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Query}}{{.Query}} - {{end}}USF Search Engine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            color: #202124;
+        }
+        /* Home page */
+        .home-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            padding: 20px;
+        }
+        .title-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .home-logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 25px;
+        }
+        .home-title {
+            font-size: 64px;
+            color: #00543C;
+            font-weight: 500;
+            text-align: center;
+            margin: 0;
+        }
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 584px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 0 20px 0 40px;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .search-box:focus {
+            box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+        }
+        .search-button {
+            background-color: #00543C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5f6368;
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Results page */
+        .results-page {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .results-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dfe1e5;
+        }
+        .results-logo {
+            width: 80px;
+            height: auto;
+            margin-right: 15px;
+        }
+        .results-search-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .results-list {
+            margin-top: 20px;
+        }
+        .result-item {
+            margin-bottom: 25px;
+            max-width: 700px;
+        }
+        .result-url {
+            color: #202124;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .result-title {
+            color: #1a0dab;
+            font-size: 18px;
+            text-decoration: none;
+            font-weight: normal;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+        .result-title:hover {
+            text-decoration: underline;
+        }
+        .result-score {
+            color: #70757a;
+            font-size: 13px;
+        }
+        
+        /* Search stats */
+        .search-stats {
+            color: #70757a;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        /* No results */
+        .no-results {
+            margin: 40px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .no-results-title {
+            font-size: 18px;
+            color: #202124;
+            margin-bottom: 15px;
+        }
+        .suggestions-list {
+            margin-left: 20px;
+            color: #5f6368;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
+            align-items: center;
+        }
+        .page-link {
+            color: #1a0dab;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #dfe1e5;
+            border-radius: 4px;
+        }
+        .page-link:hover {
+            background-color: #f1f3f4;
+        }
+        .current-page {
+            background-color: #00543C;
+            color: white;
+            border-color: #00543C;
+        }
+        .disabled {
+            color: #70757a;
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            text-align: center;
+            color: #70757a;
+            font-size: 13px;
+            border-top: 1px solid #dfe1e5;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00543C;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    {{if not .Query}}
+    <!-- Home page (initial search) -->
+    <div class="home-container">
+        <div class="title-container">
+            <img src="/static/usf_logo.png" alt="USF Logo" class="home-logo">
+            <h1 class="home-title">USF Search Engine</h1>
+        </div>
+        <form action="/top10/search" method="get" id="search-form">
+            <div class="search-container">
+                <svg class="search-icon" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                </svg>
+                <input type="text" name="q" class="search-box" placeholder="Search USF..." autofocus>
+                <button type="submit" class="search-button">Search</button>
+            </div>
+        </form>
+        <div class="footer">
+            USF Search Engine | created with Go and SQLite
+        </div>
+    </div>
+    {{else}}
+    <!-- Results page -->
+    <div class="results-page">
+        <div class="results-header">
+            <a href="/top10/search">
+                <img src="/static/usf_logo.png" alt="USF Logo" class="results-logo">
+            </a>
+            <form action="/top10/search" method="get" id="results-search-form">
+                <div class="results-search-container">
+                    <svg class="search-icon" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                    </svg>
+                    <input type="text" name="q" value="{{.Query}}" class="search-box">
+                    <button type="submit" class="search-button">Search</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="search-results">
+            <div class="search-stats">
+                {{if .HasResults}}
+                    <div>About {{.ResultsCount}} results ({{.SearchTime}} milliseconds)</div>
+                    <div>Showing results {{add .StartIndex 1}}-{{.EndIndex}} of {{.ResultsCount}}</div>
+                {{else}}
+                    <div>Loaded in {{.SearchTime}} milliseconds</div>
+                {{end}}
+            </div>
+            
+            {{if .HasResults}}
+                <div class="results-list">
+                    {{range .Results}}
+                    <div class="result-item">
+                        <a href="/search/result/{{.CleanPath}}" class="result-title" target="_blank">{{getDisplayTitle .URL}}</a>
+                        <div class="result-url">{{formatURL .URL}}</div>
+                        <div class="result-score">Relevance Score: {{formatFloat .Score}}</div>
+                    </div>
+                    {{end}}
+                </div>
+                
+                {{if gt .TotalPages 1}}
+                <div class="pagination">
+                    {{if .HasPrevPage}}
+                        <a href="/top10/search?q={{.Query}}&page={{sub .CurrentPage 1}}" class="page-link" id="prev-page">Previous</a>
+                    {{else}}
+                        <span class="page-link disabled">Previous</span>
+                    {{end}}
+                    
+                    {{range .PagesRange}}
+                        {{if eq . $.CurrentPage}}
+                            <span class="page-link current-page">{{.}}</span>
+                        {{else}}
+                            <a href="/top10/search?q={{$.Query}}&page={{.}}" class="page-link page-number">{{.}}</a>
+                        {{end}}
+                    {{end}}
+                    
+                    {{if .HasNextPage}}
+                        <a href="/top10/search?q={{.Query}}&page={{add .CurrentPage 1}}" class="page-link" id="next-page">Next</a>
+                    {{else}}
+                        <span class="page-link disabled">Next</span>
+                    {{end}}
+                </div>
+                {{end}}
+            {{else}}
+                <div class="no-results">
+                    <div class="no-results-title">No results found for "{{.Query}}"</div>
+                    <div>seems like your term doesn't exist here</div>
+                </div>
+            {{end}}
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div>Searching...</div>
+        </div>
+        
+        <div class="footer">
+            USF Search Engine | created with Go and SQLite
+        </div>
+    </div>
+    {{end}}
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced form submission with loading indicator
+        const searchForm = document.getElementById('search-form');
+        const resultsSearchForm = document.getElementById('results-search-form');
+        const searchResults = document.getElementById('search-results');
+        const loading = document.getElementById('loading');
+        
+        // Add loading indicator to forms
+        function addLoadingBehavior(form) {
+            if (!form) return;
+            
+            form.addEventListener('submit', function(e) {
+                const query = this.querySelector('input[name="q"]').value.trim();
+                if (!query) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                if (searchResults) searchResults.style.display = 'none';
+                if (loading) loading.style.display = 'block';
+            });
+        }
+        
+        addLoadingBehavior(searchForm);
+        addLoadingBehavior(resultsSearchForm);
+        
+        // Enhanced pagination
+        const paginationLinks = document.querySelectorAll('.pagination .page-link:not(.disabled):not(.current-page)');
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                if (searchResults) searchResults.style.display = 'none';
+                if (loading) loading.style.display = 'block';
+                window.location.href = href;
+            });
+        });
+    });
+    </script>
+</body>
+</html>
