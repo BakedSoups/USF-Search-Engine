@@ -41,3 +41,15 @@ with this system of crawling conccreutly this app can scale very well. its just 
 
 ## Drawbacks
 QUEUE_SIZE is a major bottle neck, if the website its looking at has more than 9000 links the program crashes 
+
+Init:
+Install and run go 
+```
+go build
+go run .
+```
+
+Once its done crawling visit:
+```
+http://localhost:8080
+```
